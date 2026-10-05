@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Prólogo e capítulo 1 de The Lord of the Rings adaptados para dinamarquês simples, com áudio e vocabulário do ov-dansk.">
+  <title>The Lord of the Rings · Danske bøger</title>
+  <style>{{STYLES}}</style>
+</head>
+<body>
+  <a class="skip-link" href="#story">Pular para a leitura</a>
+  <header class="topbar">
+    <div class="brand"><span class="brand-symbol" aria-hidden="true">❧</span><div><strong>Danske bøger</strong><p>Leia em dinamarquês, no seu ritmo.</p></div></div>
+    <div class="account"><div><span id="account-name">Mesmo login do ov-dansk</span><p>Seu vocabulário acompanha você.</p></div><button type="button" id="auth-button">Entrar com Google</button></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Capítulos e vocabulário">
+      <span class="eyebrow">Biblioteca de leitura</span>
+      <h2>The Lord of<br>the Rings</h2>
+      <p class="description">Reescrito em dinamarquês simples para a prática do módulo 3, preservando a história e os nomes do original.</p>
+      <nav aria-label="Escolher capítulo"><div class="chapter-tabs">
+        <button type="button" data-chapter="prolog" aria-pressed="true">Prolog<span>Os hobbitter e sua história</span></button>
+        <button type="button" data-chapter="kapitel-1" aria-pressed="false">Kapitel 1<span>A Long-expected Party</span></button>
+      </div></nav>
+      <nav aria-label="Seções do capítulo">{{CONTENTS}}</nav>
+      <div class="sidebar-card">
+        <button type="button" id="resume-reading">↪ Meu ponto de leitura</button>
+        <button type="button" id="show-words">Minha lista · <span id="saved-count">0 palavras</span></button>
+        <a class="review-link" href="https://rbasniak.github.io/ov-dansk/custom-config.html" target="_blank" rel="noopener noreferrer">Revisar no ov-dansk ↗</a>
+        <p>Selecione uma palavra ou frase, escreva seu significado e salve. Os termos salvos aparecem destacados no texto.</p>
+        <p id="vocabulary-state" aria-live="polite">Entre para sincronizar palavras</p>
+      </div>
+      <div class="sidebar-card download-links"><a href="texts/prolog.md" download>Texto do prólogo</a><a href="texts/kapitel-1.md" download>Texto do capítulo</a></div>
+    </aside>
+    <div class="reader-column">
+      <section class="toolbar" aria-label="Controles de leitura">
+        <div class="toolbar-actions">
+          <div class="audio-buttons"><button type="button" class="primary" id="read-continuously">▶ Ler a partir daqui</button><button type="button" id="pause-reading" disabled>Ⅱ Pausar</button><button type="button" id="stop-reading" disabled>■ Parar</button></div>
+          <div class="audio-status"><span id="audio-state" role="status">Pronto para ler</span><progress id="reading-progress" value="0" max="1" aria-label="Posição de leitura"></progress><span id="reading-position"></span></div>
+        </div>
+        <div class="toolbar-settings">
+          <label>Voz <select id="tts-engine"><option value="google">Google + alternativa</option><option value="browser">Navegador</option></select></label>
+          <label>Velocidade <select id="tts-rate"><option value="0.7">0,7×</option><option value="0.8">0,8×</option><option value="0.9" selected>0,9×</option><option value="1">1×</option><option value="1.1">1,1×</option><option value="1.25">1,25×</option></select></label>
+          <label>Letra <input type="range" id="font-size" min="17" max="29" value="21" aria-label="Tamanho da letra"></label>
+          <label>Tema <select id="theme"><option value="light">Claro</option><option value="dark">Escuro</option></select></label>
+          <label class="follow-setting"><input type="checkbox" id="follow-audio" checked>Acompanhar áudio</label>
+        </div>
+      </section>
+      <main class="book" id="story" tabindex="-1">{{STORIES}}</main>
+    </div>
+  </div>
+  <footer class="page-footer">Texto adaptado dos dois arquivos fornecidos. Selecione palavras para guardar seu vocabulário. O áudio usa Google TTS com alternativa do navegador.</footer>
+  <button type="button" id="save-selection" hidden>＋ Salvar seleção</button>
+  <div id="word-overlay" role="region" aria-label="Significado da palavra" hidden>
+    <button type="button" class="overlay-close" id="overlay-close" aria-label="Fechar significado">×</button>
+    <strong id="overlay-term" lang="da"></strong><p id="overlay-meaning"></p>
+    <div class="word-actions"><button type="button" id="overlay-listen">Ouvir</button><button type="button" id="overlay-edit">Editar</button><button type="button" id="overlay-delete">Excluir</button></div>
+  </div>
+  <dialog id="word-editor" aria-labelledby="editor-title">
+    <form id="word-form">
+      <h2 id="editor-title">Salvar para estudar</h2><p class="subtle">Informe o significado em português ou no idioma que preferir.</p>
+      <label for="word-term">Palavra ou frase em dinamarquês</label><input type="text" id="word-term" required maxlength="500" lang="da">
+      <label for="word-meaning">Significado</label><textarea id="word-meaning" required maxlength="2000"></textarea>
+      <p id="editor-error" class="form-error" role="alert"></p>
+      <div class="dialog-actions"><button type="button" data-close-dialog="word-editor">Cancelar</button><button type="submit" id="editor-submit" class="primary">Salvar no ov-dansk</button></div>
+    </form>
+  </dialog>
+  <dialog id="words-dialog" aria-labelledby="words-title">
+    <div class="dialog-heading"><h2 id="words-title">Minhas palavras</h2><button type="button" data-close-dialog="words-dialog" aria-label="Fechar lista">×</button></div>
+    <p class="subtle">Sua lista compartilhada com Saved Words no ov-dansk.</p>
+    <label for="word-search">Buscar palavra ou significado</label><input type="search" id="word-search" placeholder="Buscar na minha lista">
+    <ul id="saved-list"></ul><p id="words-empty">Entre para ver suas palavras.</p>
+    <a href="https://rbasniak.github.io/ov-dansk/custom-config.html" target="_blank" rel="noopener noreferrer">Praticar em Saved Words ↗</a>
+  </dialog>
+  <dialog id="delete-dialog" aria-labelledby="delete-title">
+    <h2 id="delete-title">Excluir palavra?</h2><p>Excluir <strong id="delete-term"></strong> e seu progresso de revisão no ov-dansk?</p>
+    <p id="delete-error" class="form-error" role="alert"></p>
+    <div class="dialog-actions"><button type="button" data-close-dialog="delete-dialog">Cancelar</button><button type="button" id="confirm-delete" class="danger">Excluir</button></div>
+  </dialog>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <noscript><p>Ative JavaScript para ouvir o texto, alternar capítulos e salvar palavras. Os textos completos continuam disponíveis nesta página.</p></noscript>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  {{SCRIPTS}}
+</body>
+</html>
