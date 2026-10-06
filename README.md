@@ -18,6 +18,8 @@ Abra `index.html`. Os dois textos, estilos e scripts do leitor estão incluídos
 
 Entre com a mesma conta Google usada no [ov-dansk](https://rbasniak.github.io/ov-dansk/), selecione uma palavra ou frase e informe seu significado. Ela será salva na lista **Saved Words**, e suas ocorrências serão destacadas nos textos. Passe o mouse ou toque em um destaque para ouvir, editar o significado ou excluir a palavra. A lista do leitor também mostra os termos salvos pelas outras aplicações.
 
+Ao selecionar texto, o menu oferece **Definição**, **Traduzir** e **Ouvir**. **Definição** abre diretamente a busca correspondente no [Den Danske Ordbog](https://ordnet.dk/ddo/) em uma nova aba. **Traduzir** usa o endpoint público do Google Translate com dinamarquês como origem e português como destino, exibindo o resultado no diálogo; o link para o [Google Tradutor](https://translate.google.com/) também fica disponível para comparação. **Ouvir** usa o endpoint Google TTS em dinamarquês e inicia a reprodução automaticamente. Os endpoints públicos não oficiais podem sofrer alterações ou limitação de uso; não são usadas chaves secretas.
+
 A integração usa o mesmo projeto Firebase Web do ov-dansk, com as coleções:
 
 ```text

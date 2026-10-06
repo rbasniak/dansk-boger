@@ -8,6 +8,7 @@
     user: null, words: [], unsubscribe: null, ticket: 0,
     ready: Promise.resolve(false), selected: '', editing: null,
     overlayId: null, overlayAnchor: null, hideTimer: null, selectionTimer: null,
+    languageTicket: 0, languageAbort: null,
   };
   const normalizeText = value => String(value).replace(/\s+/g, ' ').trim();
   const termKey = value => normalizeText(value).toLocaleLowerCase('da');
@@ -173,19 +174,19 @@
 
   function updateSelectionButton() {
     const text = selectedText();
-    const button = $('#save-selection');
-    button.hidden = !text || $('#word-editor').open;
+    const actions = $('#selection-actions');
+    actions.hidden = !text || $('#word-editor').open || $('#language-dialog').open;
     if (!text) return;
     state.selected = text;
-    button.textContent = state.user ? '＋ Salvar palavra ou frase' : '＋ Entrar para salvar seleção';
     if (window.matchMedia('(pointer: coarse)').matches) {
-      button.classList.add('selection-touch');
+      actions.classList.add('selection-touch');
       return;
     }
-    button.classList.remove('selection-touch');
+    actions.classList.remove('selection-touch');
     const rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
-    button.style.left = `${Math.max(12, Math.min(rect.left, innerWidth - 270))}px`;
-    button.style.top = `${Math.max(12, Math.min(rect.top - 48, innerHeight - 58))}px`;
+    const width = Math.min(actions.offsetWidth || 310, innerWidth - 24);
+    actions.style.left = `${Math.max(12, Math.min(rect.left, innerWidth - width - 12))}px`;
+    actions.style.top = `${Math.max(12, Math.min(rect.top - 52, innerHeight - 70))}px`;
   }
   function scheduleSelection() {
     clearTimeout(state.selectionTimer);
@@ -194,14 +195,118 @@
   document.addEventListener('selectionchange', scheduleSelection);
   document.addEventListener('mouseup', scheduleSelection);
   document.addEventListener('touchend', scheduleSelection);
-  $('#save-selection').addEventListener('pointerdown', event => event.preventDefault());
+  $('#selection-actions').addEventListener('pointerdown', event => event.preventDefault());
   $('#save-selection').addEventListener('click', async () => {
     const term = state.selected;
-    $('#save-selection').hidden = true;
+    $('#selection-actions').hidden = true;
     if (!await ensureUser()) return;
     const existing = state.words.find(item => termKey(item.term) === termKey(term));
     openEditor(existing || null, term);
   });
+  $('#define-selection').addEventListener('click', () => {
+    const term = state.selected || selectedText();
+    if (!term) return;
+    $('#selection-actions').hidden = true;
+    window.open(externalLookupUrl('definition', term), '_blank', 'noopener,noreferrer');
+  });
+  $('#translate-selection').addEventListener('click', () => openLanguageDialog('translation'));
+  $('#listen-selection').addEventListener('click', () => {
+    const term = state.selected || selectedText();
+    if (!term) return;
+    window.studyTts.configure({ engine: 'google' });
+    window.studyTts.play(term);
+  });
+
+  function externalLookupUrl(type, term) {
+    const encoded = encodeURIComponent(term);
+    return type === 'definition'
+      ? `https://ordnet.dk/ddo/ordbog?query=${encoded}`
+      : `https://translate.google.com/?sl=da&tl=pt&text=${encoded}&op=translate`;
+  }
+
+  function cleanWikiText(value) {
+    return value.replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/\{\{[^{}]*\}\}/g, '')
+      .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, '$2')
+      .replace(/\[\[([^\]]+)\]\]/g, '$1')
+      .replace(/'{2,}/g, '').replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ').trim();
+  }
+
+  async function fetchJson(url, signal) {
+    const response = await fetch(url, { signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+  }
+
+  async function lookupTranslation(term, signal) {
+    const params = new URLSearchParams({ client: 'gtx', sl: 'da', tl: 'pt', dt: 't', q: term });
+    const data = await fetchJson(`https://translate.googleapis.com/translate_a/single?${params}`, signal);
+    const value = Array.isArray(data[0])
+      ? data[0].map(part => Array.isArray(part) ? part[0] : '').join('')
+      : '';
+    if (!value) throw new Error('Tradução indisponível');
+    return value;
+  }
+
+  function addExternalLink(container, type, term) {
+    const links = document.createElement('div');
+    links.className = 'language-links';
+    const link = document.createElement('a');
+    link.href = externalLookupUrl(type, term);
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = type === 'definition' ? 'Abrir no Den Danske Ordbog ↗' : 'Abrir no Google Tradutor ↗';
+    links.appendChild(link);
+    container.appendChild(links);
+  }
+
+  function renderLanguageError(result, type, term, error) {
+    result.replaceChildren();
+    const message = document.createElement('p');
+    message.textContent = type === 'definition'
+      ? 'Não encontrei uma definição estruturada para esta seleção.'
+      : 'Não foi possível carregar a tradução agora.';
+    const note = document.createElement('p');
+    note.className = 'language-note';
+    note.textContent = error.name === 'AbortError'
+      ? 'A consulta foi cancelada porque outra seleção foi feita.'
+      : 'Você pode consultar o serviço oficial usando o link abaixo.';
+    result.append(message, note);
+    addExternalLink(result, type, term);
+  }
+
+  async function openLanguageDialog(type) {
+    const term = state.selected || selectedText();
+    if (!term) return;
+    const ticket = ++state.languageTicket;
+    state.languageAbort?.abort();
+    state.languageAbort = new AbortController();
+    $('#selection-actions').hidden = true;
+    $('#language-term').textContent = term;
+    $('#language-title').textContent = type === 'definition' ? 'Definição em dinamarquês' : 'Tradução para português';
+    const result = $('#language-result');
+    result.replaceChildren();
+    const loading = document.createElement('p');
+    loading.textContent = type === 'definition' ? 'Consultando o Wikcionário…' : 'Consultando o serviço de tradução…';
+    result.appendChild(loading);
+    $('#language-dialog').showModal();
+    try {
+      const value = await lookupTranslation(term, state.languageAbort.signal);
+      if (ticket !== state.languageTicket) return;
+      result.replaceChildren();
+      const heading = document.createElement('p');
+      heading.className = 'language-answer';
+      heading.textContent = value;
+      const note = document.createElement('p');
+      note.className = 'language-note';
+      note.textContent = 'Fonte: Google Translate. Para comparar, use o Google Tradutor no site oficial.';
+      result.append(heading, note);
+      addExternalLink(result, 'translation', term);
+    } catch (error) {
+      if (ticket === state.languageTicket) renderLanguageError(result, type, term, error);
+    }
+  }
 
   function openEditor(item, selected = '') {
     hideOverlay();
@@ -329,7 +434,7 @@
   document.addEventListener('keydown', event => { if (event.key === 'Escape') hideOverlay(); });
   window.addEventListener('scroll', hideOverlay, { passive: true });
   window.addEventListener('resize', hideOverlay);
-  window.addEventListener('study:chapter-changed', () => { hideOverlay(); $('#save-selection').hidden = true; });
+  window.addEventListener('study:chapter-changed', () => { hideOverlay(); $('#selection-actions').hidden = true; });
 
   if (!client) {
     $('#auth-button').disabled = true;

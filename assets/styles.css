@@ -83,8 +83,10 @@ progress::-moz-progress-bar { background: var(--gold); }
 .poem .paragraph-text { font-style: italic; padding-left: 18px; border-left: 2px solid var(--gold); }
 .chapter-footer { display: flex; flex-wrap: wrap; align-items: center; gap: 15px; border-top: 1px solid var(--line); margin-top: 35px; padding-top: 22px; font-size: 12px; color: var(--muted); }
 .study-word { background: var(--mark); color: inherit; border-bottom: 1px solid var(--gold); border-radius: 3px; padding: 0 1px; cursor: pointer; }
-#save-selection { position: fixed; z-index: 50; background: var(--accent); color: var(--paper); box-shadow: 0 4px 20px #0003; border-color: var(--accent); font-size: 14px; }
-#save-selection.selection-touch { left: 50% !important; top: auto !important; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); white-space: nowrap; }
+#selection-actions { position: fixed; z-index: 50; display: flex; flex-wrap: wrap; gap: 5px; background: var(--accent); color: var(--paper); padding: 5px; border-radius: 8px; box-shadow: 0 4px 20px #0003; }
+#selection-actions button { border-color: transparent; font-size: 13px; min-height: 32px; padding: 5px 8px; }
+#selection-actions button:first-child { background: var(--paper); color: var(--accent); }
+#selection-actions.selection-touch { left: 50% !important; top: auto !important; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(100% - 24px, 380px); justify-content: center; }
 #word-overlay { position: fixed; z-index: 35; width: min(340px, calc(100vw - 20px)); border: 1px solid var(--gold); background: var(--paper); border-radius: 10px; padding: 16px; box-shadow: 0 7px 35px #0003; }
 #overlay-term { display: block; color: var(--accent); padding-right: 30px; overflow-wrap: anywhere; }
 #overlay-meaning { margin: 8px 0 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -95,6 +97,7 @@ dialog { background: var(--paper); color: var(--ink); border: 1px solid var(--li
 dialog::backdrop { background: #13251baa; }
 dialog h2 { margin: 0 0 12px; font: 26px Georgia, serif; }
 dialog p { font-size: 14px; line-height: 1.6; }
+dialog a { color: var(--accent); }
 dialog label { display: block; font-size: 13px; font-weight: 600; margin: 17px 0 6px; }
 dialog input[type="text"], dialog input[type="search"], dialog textarea { width: 100%; padding: 10px; border: 1px solid var(--line); background: var(--page); color: var(--ink); border-radius: 7px; }
 dialog textarea { min-height: 100px; resize: vertical; }
@@ -102,6 +105,15 @@ dialog textarea { min-height: 100px; resize: vertical; }
 .form-error { color: #bd4848; font-size: 13px; }
 .subtle { color: var(--muted); }
 #words-dialog { width: min(640px, calc(100vw - 24px)); }
+#language-dialog { width: min(560px, calc(100vw - 24px)); }
+.language-term { margin: -5px 0 0; color: var(--accent); overflow-wrap: anywhere; }
+.language-result { min-height: 90px; padding: 16px; background: var(--page); border: 1px solid var(--line); border-radius: 8px; }
+.language-result p { margin: 0 0 12px; }
+.language-result p:last-child { margin-bottom: 0; }
+.language-result .language-answer { white-space: pre-line; line-height: 1.65; }
+.language-result .language-note { color: var(--muted); font-size: 13px; }
+.language-result .language-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.language-result .language-links a { display: inline-block; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; text-decoration: none; }
 .dialog-heading { display: flex; justify-content: space-between; align-items: start; gap: 14px; }
 #saved-list { list-style: none; padding: 0; margin: 20px 0; }
 #saved-list li { display: flex; justify-content: space-between; gap: 18px; padding: 15px 0; border-bottom: 1px solid var(--line); }
@@ -154,7 +166,7 @@ dialog textarea { min-height: 100px; resize: vertical; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 @media print {
   :root { --reading-size: 12pt; --page: white; --paper: white; --ink: black; }
-  .topbar, .sidebar, .toolbar, .paragraph-controls, .chapter-footer, .page-footer, #save-selection, #word-overlay, #toast, dialog { display: none !important; }
+  .topbar, .sidebar, .toolbar, .paragraph-controls, .chapter-footer, .page-footer, #selection-actions, #word-overlay, #toast, dialog { display: none !important; }
   .layout { display: block; margin: 0; padding: 0; }
   .book { box-shadow: none; border: 0; padding: 0; }
   .story-section h2 { break-after: avoid; }

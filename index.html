@@ -91,8 +91,10 @@ progress::-moz-progress-bar { background: var(--gold); }
 .poem .paragraph-text { font-style: italic; padding-left: 18px; border-left: 2px solid var(--gold); }
 .chapter-footer { display: flex; flex-wrap: wrap; align-items: center; gap: 15px; border-top: 1px solid var(--line); margin-top: 35px; padding-top: 22px; font-size: 12px; color: var(--muted); }
 .study-word { background: var(--mark); color: inherit; border-bottom: 1px solid var(--gold); border-radius: 3px; padding: 0 1px; cursor: pointer; }
-#save-selection { position: fixed; z-index: 50; background: var(--accent); color: var(--paper); box-shadow: 0 4px 20px #0003; border-color: var(--accent); font-size: 14px; }
-#save-selection.selection-touch { left: 50% !important; top: auto !important; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); white-space: nowrap; }
+#selection-actions { position: fixed; z-index: 50; display: flex; flex-wrap: wrap; gap: 5px; background: var(--accent); color: var(--paper); padding: 5px; border-radius: 8px; box-shadow: 0 4px 20px #0003; }
+#selection-actions button { border-color: transparent; font-size: 13px; min-height: 32px; padding: 5px 8px; }
+#selection-actions button:first-child { background: var(--paper); color: var(--accent); }
+#selection-actions.selection-touch { left: 50% !important; top: auto !important; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(100% - 24px, 380px); justify-content: center; }
 #word-overlay { position: fixed; z-index: 35; width: min(340px, calc(100vw - 20px)); border: 1px solid var(--gold); background: var(--paper); border-radius: 10px; padding: 16px; box-shadow: 0 7px 35px #0003; }
 #overlay-term { display: block; color: var(--accent); padding-right: 30px; overflow-wrap: anywhere; }
 #overlay-meaning { margin: 8px 0 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -103,6 +105,7 @@ dialog { background: var(--paper); color: var(--ink); border: 1px solid var(--li
 dialog::backdrop { background: #13251baa; }
 dialog h2 { margin: 0 0 12px; font: 26px Georgia, serif; }
 dialog p { font-size: 14px; line-height: 1.6; }
+dialog a { color: var(--accent); }
 dialog label { display: block; font-size: 13px; font-weight: 600; margin: 17px 0 6px; }
 dialog input[type="text"], dialog input[type="search"], dialog textarea { width: 100%; padding: 10px; border: 1px solid var(--line); background: var(--page); color: var(--ink); border-radius: 7px; }
 dialog textarea { min-height: 100px; resize: vertical; }
@@ -110,6 +113,15 @@ dialog textarea { min-height: 100px; resize: vertical; }
 .form-error { color: #bd4848; font-size: 13px; }
 .subtle { color: var(--muted); }
 #words-dialog { width: min(640px, calc(100vw - 24px)); }
+#language-dialog { width: min(560px, calc(100vw - 24px)); }
+.language-term { margin: -5px 0 0; color: var(--accent); overflow-wrap: anywhere; }
+.language-result { min-height: 90px; padding: 16px; background: var(--page); border: 1px solid var(--line); border-radius: 8px; }
+.language-result p { margin: 0 0 12px; }
+.language-result p:last-child { margin-bottom: 0; }
+.language-result .language-answer { white-space: pre-line; line-height: 1.65; }
+.language-result .language-note { color: var(--muted); font-size: 13px; }
+.language-result .language-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.language-result .language-links a { display: inline-block; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; text-decoration: none; }
 .dialog-heading { display: flex; justify-content: space-between; align-items: start; gap: 14px; }
 #saved-list { list-style: none; padding: 0; margin: 20px 0; }
 #saved-list li { display: flex; justify-content: space-between; gap: 18px; padding: 15px 0; border-bottom: 1px solid var(--line); }
@@ -162,7 +174,7 @@ dialog textarea { min-height: 100px; resize: vertical; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 @media print {
   :root { --reading-size: 12pt; --page: white; --paper: white; --ink: black; }
-  .topbar, .sidebar, .toolbar, .paragraph-controls, .chapter-footer, .page-footer, #save-selection, #word-overlay, #toast, dialog { display: none !important; }
+  .topbar, .sidebar, .toolbar, .paragraph-controls, .chapter-footer, .page-footer, #selection-actions, #word-overlay, #toast, dialog { display: none !important; }
   .layout { display: block; margin: 0; padding: 0; }
   .book { box-shadow: none; border: 0; padding: 0; }
   .story-section h2 { break-after: avoid; }
@@ -1863,12 +1875,22 @@ dialog textarea { min-height: 100px; resize: vertical; }
     </div>
   </div>
   <footer class="page-footer">Texto adaptado dos dois arquivos fornecidos. Selecione palavras para guardar seu vocabulário. O áudio usa Google TTS com alternativa do navegador.</footer>
-  <button type="button" id="save-selection" hidden>＋ Salvar seleção</button>
+  <div id="selection-actions" hidden role="toolbar" aria-label="Ações para o texto selecionado">
+    <button type="button" id="save-selection">＋ Salvar</button>
+    <button type="button" id="define-selection">Definição</button>
+    <button type="button" id="translate-selection">Traduzir</button>
+    <button type="button" id="listen-selection">Ouvir</button>
+  </div>
   <div id="word-overlay" role="region" aria-label="Significado da palavra" hidden>
     <button type="button" class="overlay-close" id="overlay-close" aria-label="Fechar significado">×</button>
     <strong id="overlay-term" lang="da"></strong><p id="overlay-meaning"></p>
     <div class="word-actions"><button type="button" id="overlay-listen">Ouvir</button><button type="button" id="overlay-edit">Editar</button><button type="button" id="overlay-delete">Excluir</button></div>
   </div>
+  <dialog id="language-dialog" aria-labelledby="language-title">
+    <div class="dialog-heading"><div><h2 id="language-title">Consultar seleção</h2><p id="language-term" class="language-term" lang="da"></p></div><button type="button" data-close-dialog="language-dialog" aria-label="Fechar consulta">×</button></div>
+    <div id="language-result" class="language-result" aria-live="polite"></div>
+    <div class="dialog-actions"><button type="button" data-close-dialog="language-dialog">Fechar</button></div>
+  </dialog>
   <dialog id="word-editor" aria-labelledby="editor-title">
     <form id="word-form">
       <h2 id="editor-title">Salvar para estudar</h2><p class="subtle">Informe o significado em português ou no idioma que preferir.</p>
@@ -2324,6 +2346,7 @@ dialog textarea { min-height: 100px; resize: vertical; }
     user: null, words: [], unsubscribe: null, ticket: 0,
     ready: Promise.resolve(false), selected: '', editing: null,
     overlayId: null, overlayAnchor: null, hideTimer: null, selectionTimer: null,
+    languageTicket: 0, languageAbort: null,
   };
   const normalizeText = value => String(value).replace(/\s+/g, ' ').trim();
   const termKey = value => normalizeText(value).toLocaleLowerCase('da');
@@ -2489,19 +2512,19 @@ dialog textarea { min-height: 100px; resize: vertical; }
 
   function updateSelectionButton() {
     const text = selectedText();
-    const button = $('#save-selection');
-    button.hidden = !text || $('#word-editor').open;
+    const actions = $('#selection-actions');
+    actions.hidden = !text || $('#word-editor').open || $('#language-dialog').open;
     if (!text) return;
     state.selected = text;
-    button.textContent = state.user ? '＋ Salvar palavra ou frase' : '＋ Entrar para salvar seleção';
     if (window.matchMedia('(pointer: coarse)').matches) {
-      button.classList.add('selection-touch');
+      actions.classList.add('selection-touch');
       return;
     }
-    button.classList.remove('selection-touch');
+    actions.classList.remove('selection-touch');
     const rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
-    button.style.left = `${Math.max(12, Math.min(rect.left, innerWidth - 270))}px`;
-    button.style.top = `${Math.max(12, Math.min(rect.top - 48, innerHeight - 58))}px`;
+    const width = Math.min(actions.offsetWidth || 310, innerWidth - 24);
+    actions.style.left = `${Math.max(12, Math.min(rect.left, innerWidth - width - 12))}px`;
+    actions.style.top = `${Math.max(12, Math.min(rect.top - 52, innerHeight - 70))}px`;
   }
   function scheduleSelection() {
     clearTimeout(state.selectionTimer);
@@ -2510,14 +2533,118 @@ dialog textarea { min-height: 100px; resize: vertical; }
   document.addEventListener('selectionchange', scheduleSelection);
   document.addEventListener('mouseup', scheduleSelection);
   document.addEventListener('touchend', scheduleSelection);
-  $('#save-selection').addEventListener('pointerdown', event => event.preventDefault());
+  $('#selection-actions').addEventListener('pointerdown', event => event.preventDefault());
   $('#save-selection').addEventListener('click', async () => {
     const term = state.selected;
-    $('#save-selection').hidden = true;
+    $('#selection-actions').hidden = true;
     if (!await ensureUser()) return;
     const existing = state.words.find(item => termKey(item.term) === termKey(term));
     openEditor(existing || null, term);
   });
+  $('#define-selection').addEventListener('click', () => {
+    const term = state.selected || selectedText();
+    if (!term) return;
+    $('#selection-actions').hidden = true;
+    window.open(externalLookupUrl('definition', term), '_blank', 'noopener,noreferrer');
+  });
+  $('#translate-selection').addEventListener('click', () => openLanguageDialog('translation'));
+  $('#listen-selection').addEventListener('click', () => {
+    const term = state.selected || selectedText();
+    if (!term) return;
+    window.studyTts.configure({ engine: 'google' });
+    window.studyTts.play(term);
+  });
+
+  function externalLookupUrl(type, term) {
+    const encoded = encodeURIComponent(term);
+    return type === 'definition'
+      ? `https://ordnet.dk/ddo/ordbog?query=${encoded}`
+      : `https://translate.google.com/?sl=da&tl=pt&text=${encoded}&op=translate`;
+  }
+
+  function cleanWikiText(value) {
+    return value.replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/\{\{[^{}]*\}\}/g, '')
+      .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, '$2')
+      .replace(/\[\[([^\]]+)\]\]/g, '$1')
+      .replace(/'{2,}/g, '').replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ').trim();
+  }
+
+  async function fetchJson(url, signal) {
+    const response = await fetch(url, { signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+  }
+
+  async function lookupTranslation(term, signal) {
+    const params = new URLSearchParams({ client: 'gtx', sl: 'da', tl: 'pt', dt: 't', q: term });
+    const data = await fetchJson(`https://translate.googleapis.com/translate_a/single?${params}`, signal);
+    const value = Array.isArray(data[0])
+      ? data[0].map(part => Array.isArray(part) ? part[0] : '').join('')
+      : '';
+    if (!value) throw new Error('Tradução indisponível');
+    return value;
+  }
+
+  function addExternalLink(container, type, term) {
+    const links = document.createElement('div');
+    links.className = 'language-links';
+    const link = document.createElement('a');
+    link.href = externalLookupUrl(type, term);
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = type === 'definition' ? 'Abrir no Den Danske Ordbog ↗' : 'Abrir no Google Tradutor ↗';
+    links.appendChild(link);
+    container.appendChild(links);
+  }
+
+  function renderLanguageError(result, type, term, error) {
+    result.replaceChildren();
+    const message = document.createElement('p');
+    message.textContent = type === 'definition'
+      ? 'Não encontrei uma definição estruturada para esta seleção.'
+      : 'Não foi possível carregar a tradução agora.';
+    const note = document.createElement('p');
+    note.className = 'language-note';
+    note.textContent = error.name === 'AbortError'
+      ? 'A consulta foi cancelada porque outra seleção foi feita.'
+      : 'Você pode consultar o serviço oficial usando o link abaixo.';
+    result.append(message, note);
+    addExternalLink(result, type, term);
+  }
+
+  async function openLanguageDialog(type) {
+    const term = state.selected || selectedText();
+    if (!term) return;
+    const ticket = ++state.languageTicket;
+    state.languageAbort?.abort();
+    state.languageAbort = new AbortController();
+    $('#selection-actions').hidden = true;
+    $('#language-term').textContent = term;
+    $('#language-title').textContent = type === 'definition' ? 'Definição em dinamarquês' : 'Tradução para português';
+    const result = $('#language-result');
+    result.replaceChildren();
+    const loading = document.createElement('p');
+    loading.textContent = type === 'definition' ? 'Consultando o Wikcionário…' : 'Consultando o serviço de tradução…';
+    result.appendChild(loading);
+    $('#language-dialog').showModal();
+    try {
+      const value = await lookupTranslation(term, state.languageAbort.signal);
+      if (ticket !== state.languageTicket) return;
+      result.replaceChildren();
+      const heading = document.createElement('p');
+      heading.className = 'language-answer';
+      heading.textContent = value;
+      const note = document.createElement('p');
+      note.className = 'language-note';
+      note.textContent = 'Fonte: Google Translate. Para comparar, use o Google Tradutor no site oficial.';
+      result.append(heading, note);
+      addExternalLink(result, 'translation', term);
+    } catch (error) {
+      if (ticket === state.languageTicket) renderLanguageError(result, type, term, error);
+    }
+  }
 
   function openEditor(item, selected = '') {
     hideOverlay();
@@ -2645,7 +2772,7 @@ dialog textarea { min-height: 100px; resize: vertical; }
   document.addEventListener('keydown', event => { if (event.key === 'Escape') hideOverlay(); });
   window.addEventListener('scroll', hideOverlay, { passive: true });
   window.addEventListener('resize', hideOverlay);
-  window.addEventListener('study:chapter-changed', () => { hideOverlay(); $('#save-selection').hidden = true; });
+  window.addEventListener('study:chapter-changed', () => { hideOverlay(); $('#selection-actions').hidden = true; });
 
   if (!client) {
     $('#auth-button').disabled = true;

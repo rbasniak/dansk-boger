@@ -51,12 +51,22 @@
     </div>
   </div>
   <footer class="page-footer">Texto adaptado dos dois arquivos fornecidos. Selecione palavras para guardar seu vocabulário. O áudio usa Google TTS com alternativa do navegador.</footer>
-  <button type="button" id="save-selection" hidden>＋ Salvar seleção</button>
+  <div id="selection-actions" hidden role="toolbar" aria-label="Ações para o texto selecionado">
+    <button type="button" id="save-selection">＋ Salvar</button>
+    <button type="button" id="define-selection">Definição</button>
+    <button type="button" id="translate-selection">Traduzir</button>
+    <button type="button" id="listen-selection">Ouvir</button>
+  </div>
   <div id="word-overlay" role="region" aria-label="Significado da palavra" hidden>
     <button type="button" class="overlay-close" id="overlay-close" aria-label="Fechar significado">×</button>
     <strong id="overlay-term" lang="da"></strong><p id="overlay-meaning"></p>
     <div class="word-actions"><button type="button" id="overlay-listen">Ouvir</button><button type="button" id="overlay-edit">Editar</button><button type="button" id="overlay-delete">Excluir</button></div>
   </div>
+  <dialog id="language-dialog" aria-labelledby="language-title">
+    <div class="dialog-heading"><div><h2 id="language-title">Consultar seleção</h2><p id="language-term" class="language-term" lang="da"></p></div><button type="button" data-close-dialog="language-dialog" aria-label="Fechar consulta">×</button></div>
+    <div id="language-result" class="language-result" aria-live="polite"></div>
+    <div class="dialog-actions"><button type="button" data-close-dialog="language-dialog">Fechar</button></div>
+  </dialog>
   <dialog id="word-editor" aria-labelledby="editor-title">
     <form id="word-form">
       <h2 id="editor-title">Salvar para estudar</h2><p class="subtle">Informe o significado em português ou no idioma que preferir.</p>

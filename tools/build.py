@@ -14,7 +14,7 @@ def slug(text):
     return re.sub(r'[^a-z0-9]+', '-', text).strip('-')
 
 def render_chapter(chapter_id, title, filename):
-    blocks = (ROOT / filename).read_text().strip().split('\n\n')
+    blocks = (ROOT / filename).read_text(encoding='utf-8').strip().split('\n\n')
     output, toc = [], []
     section_open = False
     paragraph_count = 0
@@ -58,14 +58,14 @@ def render_chapter(chapter_id, title, filename):
 
 def build():
     rendered = [render_chapter(*chapter) for chapter in CHAPTERS]
-    css = (ROOT / 'assets/styles.css').read_text()
-    scripts = '\n'.join(f'<script>\n{(ROOT / f"assets/{filename}").read_text()}\n</script>' for filename in
+    css = (ROOT / 'assets/styles.css').read_text(encoding='utf-8')
+    scripts = '\n'.join(f'<script>\n{(ROOT / f"assets/{filename}").read_text(encoding="utf-8")}\n</script>' for filename in
                         ['tts.js', 'reader.js', 'firebase-client.js', 'custom-words.js'])
-    template = (ROOT / 'tools/reader-template.html').read_text()
+    template = (ROOT / 'tools/reader-template.html').read_text(encoding='utf-8')
     for key, value in {'STYLES': css, 'STORIES': '\n'.join(item[0] for item in rendered),
                        'CONTENTS': '\n'.join(item[1] for item in rendered), 'SCRIPTS': scripts}.items():
         template = template.replace(f'{{{{{key}}}}}', value)
-    (ROOT / 'index.html').write_text(template)
+    (ROOT / 'index.html').write_text(template, encoding='utf-8')
     print(f'Built index.html ({len(template.encode()) // 1024} KiB).')
 
 if __name__ == '__main__':
